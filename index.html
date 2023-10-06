@@ -45,72 +45,78 @@
     }
     </style>    
     <script src="push.js"></script>
+    <script src="easytimer.js"></script>
     <script>
         var seconds = 5;
 
-        function seconds_to_string(time)
-        {
-            // https://www.w3schools.com/howto/howto_js_countdown.asp
-            var minutes = Math.floor((time % (1000 * 60 * 60)) / (1000 * 60));
-            var seconds = Math.floor((time % (1000 * 60)) / 1000);
-
-            return minutes + ":" + seconds
+        class Uebung {
+            constructor(name, time) {
+                this.name = name
+                this.time = time
+            }
         }
 
-        function timer_alert(button_id)
+        const uebungen = [
+            new Uebung("Latzug", {minutes: 0, seconds: 5}),
+            new Uebung("Bankdrücken", {minutes: 1, seconds: 30}) 
+        ]
+
+        function timer_start(id)
         {
             // TODO pair names and times
 
-            var target = new Date();
-            target.setSeconds(target.getSeconds() + seconds);
+            let uebung = uebungen[id]
 
-            var x = setInterval(() => {
-                var now = new Date().getTime()
+            var timer = new easytimer.Timer();
+            timer.start({countdown: true, startValues: uebung.time})
 
-                var distance = target - now
+            let timer_label = document.getElementById("uebungen").children[id].getElementsByClassName("timer")[0]
 
-                if (distance <= 0) {
-                    console.log("here")
-                    
-                    clearInterval(x)
+            timer_label.innerHTML = timer.getTimeValues().toString()
 
-                    return
-                }
+            timer.addEventListener('secondsUpdated', function (e) {
+                timer_label.innerHTML = timer.getTimeValues().toString()
+            });
 
-                document.getElementById(button_id).parentElement.getElementsByClassName("timer")[0].innerHTML = seconds_to_string(distance)
-            }, 1000)
+            timer.addEventListener('targetAchieved', function (e) {
+                timer_notify()
+            });
         }
 
-        function push() {
-            console.log("here")
-            Push.create('Hello world!', {
-                body: 'How\'s it hangin\'?',
-                link: '/#',
+        function timer_notify() {
+            Push.create('Pause vorbei', {
                 timeout: 4000,
-                onClick: function () {
-                    console.log("Fired!");
-                    window.focus();
-                    this.close();
-                },
                 vibrate: [200, 100, 200, 100, 200, 100, 200]
             });
         }
 
-        window.onload = function() {
-            document.getElementById("demo_button").parentElement.getElementsByClassName("timer")[0].innerHTML = seconds_to_string(seconds * 1000)
+        window.onload = (event) => {
+            let div = document.getElementById("uebungen")
+            for (i = 0; i < uebungen.length; i++) {
+                let element = uebungen[i]
+
+                let child = document.createElement("div")
+                child.innerHTML = element.name
+
+                let button = document.createElement("button")
+                button.setAttribute('onclick', 'timer_start(' + i + ')')
+                button.innerHTML = "Timer"
+
+                let label = document.createElement("label")
+                label.setAttribute('class', 'timer')
+
+                child.appendChild(button)
+                child.appendChild(label)
+
+                div.appendChild(child)
+            }
         }
     </script>
 </head>
 
 <body>
 
-<div class="uebung">
-    Latzug
-    <a id="demo_button" href="#" class="button" onclick="push()">
-        Timer
-    </a>
-    <label class="timer"></label>
-</div>
+<div id="uebungen"></div>
 
 </body>
 </html>
