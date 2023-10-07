@@ -1,0 +1,37 @@
+body {
+    background-color: #f0f0f2;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.uebungen {
+    background: lightgray;
+    border: 2px solid;
+    margin: 2px;
+}
+.sets {
+    float: right;
+    background-color: darkgray;
+}
+.reps {
+    float: right;
+    background-color: darkgray;
+    margin-right: 4px;
+}
+.timer {
+    float: right;
+}
+.uebung {
+    background-color: #c8c8c8;
+    border: 1px solid;
+    border-color: black;
+    margin: 2%
+}
+.uebung button {
+    float: right;
+}
+.superset {
+    border: 1px solid;
+    border-color: gray;
+    padding: 0.5% 0.5%
+}
