@@ -13,18 +13,10 @@
         padding: 0;
         font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     }
-    /** div {
-        width: 600px;
-        margin: 5em auto;
-        padding: 2em;
-        background-color: #fdfdff;
-        border-radius: 0.5em;
-        box-shadow: 2px 3px 7px 2px rgba(0,0,0,0.02);
-    } */
-    img.icon {
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
+    .uebungen {
+        background: lightgray;
+        border: 2px solid;
+        margin: 2px;
     }
     .sets {
         float: right;
@@ -39,14 +31,17 @@
         float: right;
     }
     .uebung {
-        background-color: gray;
+        background-color: #c8c8c8;
+        border: 1px solid;
+        border-color: black;
         margin: 2%
     }
     .uebung button {
         float: right;
     }
     .superset {
-        background-color: darkblue;
+        border: 1px solid;
+        border-color: gray;
         padding: 0.5% 0.5%
     }
     a:link {
@@ -76,36 +71,43 @@
             }
         }
 
-        const uebungen = [
+        var exercise_json = []
+
+        /* const uebungen = [
             new Uebung("Hackenschmidt",         {minutes: 2, seconds: 0}, 5, 8),
             new Uebung("Hexbar",                {minutes: 3, seconds: 0}, 5, 6),
             new Uebung("Beinpresse vertikal",   {minutes: 2, seconds: 0}, 4, 12),
             new Uebung("Beinbeuger stehend",    {minutes: 1, seconds: 0}, 4, 8),
             new Uebung("Käfer",                 {minutes: 0, seconds: 0}, 4, 20),
             new Uebung("Scheibenwischer",       {minutes: 1, seconds: 0}, 4, 20),
+            new Uebung("Test",                  {minutes: 0, seconds: 2}, 4, 20),
         ]
 
-        const supersets = [[4, 5]]
+        const supersets = [[4, 5]] */
 
         function reset_timer_label(label, time)
         {
             label.innerHTML = "00:" + String(time.minutes).padStart(2, '0') + ":" + String(time.seconds).padStart(2, '0')
         }
 
-        function timer_start(id)
+        function exercise_id(day, ex) {
+            return 'uebung_' + day + '-' + ex
+        }
+
+        function timer_start(day, id)
         {
             // TODO pair names and times
 
-            let uebung = uebungen[id]
+            var uebung = exercise_json[day][0][id]
 
-            let sets_label = document.getElementById('uebung_' + id).getElementsByClassName("sets")[0]
+            let sets_label = document.getElementById(exercise_id(day, id)).getElementsByClassName("sets")[0]
             if (sets_label.innerHTML > 0)
                 sets_label.innerHTML = sets_label.innerHTML - 1
 
             var timer = new easytimer.Timer();
             timer.start({countdown: true, startValues: uebung.time})
 
-            let timer_label = document.getElementById('uebung_' + id).getElementsByClassName("timer")[0]
+            let timer_label = document.getElementById(exercise_id(day, id)).getElementsByClassName("timer")[0]
 
             timer_label.innerHTML = timer.getTimeValues().toString()
 
@@ -126,8 +128,9 @@
             });
         }
 
-        window.onload = (event) => {
-            let div = document.getElementById("uebungen")
+        function parse_day(parent, uebungen, supersets, nday) {
+            var div = document.createElement("div");
+            div.setAttribute("class", "uebungen");
             for (i = 0; i < uebungen.length; i++) {
                 let element = uebungen[i]
 
@@ -138,10 +141,10 @@
                 label_name.innerHTML = element.name
 
                 child.setAttribute('class', 'uebung')
-                child.setAttribute('id', 'uebung_' + i)
+                child.setAttribute('id', exercise_id(nday, i))
 
                 let button = document.createElement("button")
-                button.setAttribute('onclick', 'timer_start(' + i + ')')
+                button.setAttribute('onclick', 'timer_start(' + nday + ',' + i + ')')
                 button.innerHTML = "Timer"
 
                 let label_timer = document.createElement("label")
@@ -165,10 +168,10 @@
                 div.appendChild(child)
             }
 
+            parent.appendChild(div)
+
             // group exercises into 'superset' class divs
             supersets.forEach((e) => {
-                let div = document.getElementById("uebungen")
-
                 let superset = document.createElement("div")
                 superset.setAttribute('class', 'superset')
 
@@ -178,11 +181,11 @@
                 // in the superset, to insert superset before
                 let following_id = e[e.length - 1] + 1
                 if (following_id < uebungen.length) {
-                    before = document.getElementById("uebung_" + following_id)
+                    before = document.getElementById(exercise_id(nday, following_id))
                 }
 
                 for (i = 0; i < e.length; i++) {
-                    superset.appendChild(div.removeChild(document.getElementById("uebung_" + e[i])))
+                    superset.appendChild(div.removeChild(document.getElementById(exercise_id(nday, e[i]))))
                 }
 
                 if (typeof before != "undefined")
@@ -191,12 +194,42 @@
                     div.appendChild(superset)
             })
         }
+
+        window.onload = () => {
+            document.getElementById("input").addEventListener("change", (e) => {
+                if (e.target.files[0]) {
+                    var file = e.target.files[0];
+
+                    var reader = new FileReader();
+                    reader.readAsText(file, 'UTF-8');
+
+                    reader.onload = (reader_event) => {
+                        var content = reader_event.target.result;
+
+                        var plan = JSON.parse(content)
+                        exercise_json = plan
+
+                        var div = document.getElementById("tage")
+
+                        while(div.firstChild)
+                            div.remove(div.firstChild)
+
+                        var nday = 0;
+                        plan.forEach((day) => {
+                            parse_day(div, day[0], day[1], nday++)
+                        })
+                    }
+                }
+            })
+        }
     </script>
 </head>
 
 <body>
 
-<div id="uebungen"></div>
+<input type="file" id="input"></input>
+<!-- <div id="uebungen" class="uebungen"></div> -->
+<div id="tage"></div>
 
 </body>
 </html>
