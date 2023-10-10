@@ -40,6 +40,7 @@ function timer_start(day, id)
 }
 
 function timer_notify() {
+    Push.clear()
     Push.create('Pause vorbei', {
         timeout: 4000,
         vibrate: [200, 100, 200, 100, 200, 100, 200]
