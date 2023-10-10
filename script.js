@@ -1,4 +1,5 @@
 var exercise_json = []
+var timer = new easytimer.Timer()
 
 function reset_timer_label(label, time)
 {
@@ -13,13 +14,15 @@ function timer_start(day, id)
 {
     // TODO pair names and times
 
+    if (timer.isRunning())
+        return
+
     var uebung = exercise_json[day][0][id]
 
     let sets_label = document.getElementById(exercise_id(day, id)).getElementsByClassName("sets")[0]
     if (sets_label.innerHTML > 0)
         sets_label.innerHTML = sets_label.innerHTML - 1
 
-    var timer = new easytimer.Timer();
     timer.start({countdown: true, startValues: uebung.time})
 
     let timer_label = document.getElementById(exercise_id(day, id)).getElementsByClassName("timer")[0]
